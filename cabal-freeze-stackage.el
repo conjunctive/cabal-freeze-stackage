@@ -4,7 +4,7 @@
 
 ;; Author: Conjunctive <conjunctive@protonmail.com>
 ;; Keywords: haskell cabal stackage
-;; Version: 0.0.1
+;; Version: 0.0.2
 ;; URL: https://github.com/conjunctive/cabal-freeze-stackage
 ;; Package-Requires: ((emacs "27"))
 
@@ -27,6 +27,7 @@
 ;; (cabal-freeze-file-for-system-ghc "~/haskell-project" 5)
 ;; (cabal-freeze-file-for-ghc "8.0.2" "~/haskell-project" 30)
 ;; (cabal-freeze-file-for-ghc "8.6.3" "~/haskell-project" 20 t)
+;; (cabal-freeze-file-for-resolver "lts-16.22" "~/haskell-project")
 
 ;;; Code:
 
@@ -93,6 +94,16 @@ The resulting file will be saved to the provided OUTPUT-DIRECTORY."
                (save-buffer))
         (kill-buffer freeze-file))
     (error "Unable to retrieve freeze file")))
+
+(defun cabal-freeze-file-for-resolver (resolver output-directory)
+  "Retrieve a Cabal freeze file for the specified Stackage snapshot.
+Selection is based on the provided RESOLVER (eg. \"lts-16.22\" or \"nightly-2021-02-23\").
+The resulting file will be saved to the provided OUTPUT-DIRECTORY."
+  (let ((out-dir (directory-file-name output-directory)))
+    (if (file-exists-p out-dir)
+        (let ((resolver-url (concat "https://www.stackage.org/" resolver)))
+          (fetch-cabal-freeze-file output-directory resolver-url))
+        (error "Specified output directory does not exist"))))
 
 (defun cabal-freeze-file-for-ghc (ghc-version output-directory &optional max-page-lookup use-nightly)
   "Retrieve a Cabal freeze file for the latest compatible LTS Stackage snapshot.
